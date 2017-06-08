@@ -1,0 +1,91 @@
+public PagedList<UserProfile> GetRoleByUserName(string role, string searchText, int pageIndex, int pageSize)
+        {
+            int totalCount = 0;
+            PagedList<UserProfile> pagedList = null;
+            List<UserProfile> userList = null;
+            List<UserRoles> roleList = null;
+            Dictionary<string, List<string>> dict = null;
+
+            DataProvider.ExecuteCmd(GetConnection, "dbo.AspNetUsers_SelectRoleByUserName"
+             , inputParamMapper: delegate (SqlParameterCollection paramCollection)
+             {
+                 paramCollection.AddWithValue("@SearchText", searchText);
+                 paramCollection.AddWithValue("@UserRole", role);
+                 paramCollection.AddWithValue("@PageIndex", pageIndex);
+                 paramCollection.AddWithValue("@PageSize", pageSize);
+             }
+            , map: delegate (IDataReader reader, short set)
+            {
+                if (set == 0)
+                {
+                    UserProfile user;
+                    MapUserProfile(reader, out user);
+
+                    if (userList == null)
+                    {
+                        userList = new List<UserProfile>();
+                    }
+                    userList.Add(user);
+
+                    if (totalCount == 0)
+                    {
+                        totalCount = reader.GetSafeInt32(9);
+                    }
+                }
+
+                else if (set == 1)
+                {
+                    UserRoles r = MapUserProfileRoles(reader);
+                    if (roleList == null)
+                    {
+                        roleList = new List<UserRoles>();
+                    }
+                    roleList.Add(r);
+                }
+                else if (set == 2)
+                {
+                    string roleId = reader.GetSafeString(0);
+                    string userId = reader.GetSafeString(1);
+
+                    if (dict == null)
+                    {
+                        dict = new Dictionary<string, List<string>>();
+                    }
+                    if (!dict.ContainsKey(userId))
+                    {
+                        dict.Add(userId, new List<string>());
+                    }
+                    List<string> myList = dict[userId];
+
+                    myList.Add(roleId);
+                }
+            });
+
+
+            if (userList != null && dict != null)
+            {
+                foreach (UserProfile singleUser in userList)
+                {
+                    if (!dict.ContainsKey(singleUser.Id))
+                    {
+                        continue;
+                    }
+
+                    List<string> roleIds = dict[singleUser.Id];
+                    List<UserRoles> roles = new List<UserRoles>();
+                    foreach (string roleId in roleIds)
+                    {
+                        UserRoles d = roleList.FirstOrDefault(c => c.RoleId == roleId);
+                        roles.Add(d);
+                    }
+                    singleUser.Roles = roles;
+                }
+                pagedList = new PagedList<UserProfile>(userList, pageIndex, pageSize, totalCount);
+            }
+            else if (userList != null)
+            {
+                pagedList = new PagedList<UserProfile>(userList, pageIndex, pageSize, totalCount);
+            }
+
+            return pagedList;
+        }
