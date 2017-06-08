@@ -61,7 +61,6 @@ public PagedList<UserProfile> GetRoleByUserName(string role, string searchText, 
                 }
             });
 
-
             if (userList != null && dict != null)
             {
                 foreach (UserProfile singleUser in userList)
