@@ -1,0 +1,30 @@
+	[RoutePrefix("api/users")]
+    public class UserRoleApiController : ApiController
+    {
+		private IUserRoleService _userRoleService = null;
+        public UserRoleApiController(IUserRoleService userRoleService)
+        {
+            _userRoleService = userRoleService;
+        }
+		
+		[Route(role), HttpGet]
+        public HttpResponseMessage GetByUserRole(string role, string terms, int pageIndex, int pageSize)
+        {
+		
+            ItemResponse<PagedList<Domain.UserProfile>> response = new ItemResponse<PagedList<Domain.UserProfile>>();
+            response.Item = _userRoleService.GetRoleByUserName(role, terms, pageIndex, pageSize);
+            return Request.CreateResponse(HttpStatusCode.OK, response);
+        }
+	
+		[Route(role), HttpPost]
+        public HttpResponseMessage Insert(UserProfileRoleAddRequest model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return Request.CreateResponse(HttpStatusCode.BadRequest, ModelState);
+            }
+            SuccessResponse response = new SuccessResponse();
+            _userRoleService.AddUserRole(model);
+            return Request.CreateResponse(HttpStatusCode.OK, response);
+        }
+	}
