@@ -10,7 +10,6 @@
 	[Route(role), HttpGet]
         public HttpResponseMessage GetByUserRole(string role, string terms, int pageIndex, int pageSize)
         {
-		
             ItemResponse<PagedList<Domain.UserProfile>> response = new ItemResponse<PagedList<Domain.UserProfile>>();
             response.Item = _userRoleService.GetRoleByUserName(role, terms, pageIndex, pageSize);
             return Request.CreateResponse(HttpStatusCode.OK, response);
