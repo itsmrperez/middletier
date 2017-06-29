@@ -81,6 +81,7 @@ public PagedList<UserProfile> GetRoleByUserName(string role, string searchText, 
                 }
                 pagedList = new PagedList<UserProfile>(userList, pageIndex, pageSize, totalCount);
             }
+            //If roles were not a parameter this would still bring users that have no role
             else if (userList != null)
             {
                 pagedList = new PagedList<UserProfile>(userList, pageIndex, pageSize, totalCount);
